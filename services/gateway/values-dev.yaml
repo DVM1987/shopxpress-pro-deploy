@@ -1,18 +1,14 @@
 # Dev override — bot auto-bumps image.tag after every successful build-push.
 
 image:
-  tag: sha-f807f6c
-
+  tag: sha-179d0aa
 replicas: 2
-
 upstreams:
   productsUrl: http://products-dev:80
   ordersUrl: http://orders-dev:80
-
 ingress:
   groupOrder: 30
   host: gateway-dev.shopxpress-pro.do2602.click
-
 resources:
   requests:
     cpu: 50m
