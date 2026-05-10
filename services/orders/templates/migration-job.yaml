@@ -27,10 +27,14 @@ spec:
       labels: {{- include "lib.labels" . | nindent 8 }}
     spec:
       restartPolicy: OnFailure
+      # Pod Security `restricted` enforced on NS dev/stg/prd — phải hardened
+      # securityContext nonroot + seccomp + drop caps + readOnlyRootFS.
+      securityContext: {{- include "lib.podSecurityContext" . | nindent 8 }}
       containers:
         - name: migrate
           image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag }}"
           imagePullPolicy: IfNotPresent
+          securityContext: {{- include "lib.containerSecurityContext" . | nindent 12 }}
           # golang-migrate CLI: idempotent — chỉ apply pending migration.
           # Lần 2+ run sẽ exit 0 ngay với log "no change".
           command: ["migrate"]
