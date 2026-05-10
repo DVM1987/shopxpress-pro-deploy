@@ -44,7 +44,7 @@ externalSecret:
   enabled: true
   refreshInterval: 1h
   secretStoreRef:
-    name: shopxpress-pro-cluster-store
+    name: aws-secrets-manager
     kind: ClusterSecretStore
   targetSecretName: orders-db-secret
   awsSecretPath: /shopxpress-pro/dev/orders
