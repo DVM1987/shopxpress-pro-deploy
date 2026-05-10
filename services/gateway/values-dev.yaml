@@ -1,0 +1,19 @@
+# Dev override — bot auto-bumps image.tag after every successful build-push.
+
+replicas: 2
+
+upstreams:
+  productsUrl: http://products-dev:80
+  ordersUrl: http://orders-dev:80
+
+ingress:
+  groupOrder: 30
+  host: gateway-dev.shopxpress-pro.do2602.click
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

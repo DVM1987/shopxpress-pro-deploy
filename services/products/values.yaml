@@ -1,0 +1,59 @@
+# Base defaults for products microservice. Per-env files override only diverging keys.
+
+replicas: 1
+
+image:
+  repository: 527055790396.dkr.ecr.ap-southeast-1.amazonaws.com/shopxpress-pro-products
+  tag: latest                          # bot bumps this in values-dev.yaml only
+  pullPolicy: IfNotPresent
+
+service:
+  port: 80
+  targetPort: 8080                     # Go HTTP listens on 8080
+
+containerPort: 8080
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+probes:
+  liveness:
+    path: /healthz
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  readiness:
+    path: /readyz
+    initialDelaySeconds: 3
+    periodSeconds: 5
+
+serviceAccount:
+  create: true
+  name: ""                             # default: <release>-<chart>
+
+# Internal microservice — no Internet-facing Ingress.
+ingress:
+  enabled: false
+
+# Postgres-backed — ExternalSecret syncs DSN from AWS Secrets Manager.
+externalSecret:
+  enabled: true
+  refreshInterval: 1h
+  secretStoreRef:
+    name: shopxpress-pro-cluster-store
+    kind: ClusterSecretStore
+  targetSecretName: products-db-secret
+  awsSecretPath: /shopxpress-pro/dev/products    # overridden per-env
+  envKey: DATABASE_URL                           # key inside AWS Secret JSON
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 0
+
+terminationGracePeriodSeconds: 30

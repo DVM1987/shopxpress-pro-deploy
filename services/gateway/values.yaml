@@ -1,0 +1,60 @@
+# Base defaults for gateway BFF. Per-env files override only diverging keys.
+
+replicas: 2                            # gateway = entrypoint, default >= 2 even in dev
+
+image:
+  repository: 527055790396.dkr.ecr.ap-southeast-1.amazonaws.com/shopxpress-pro-gateway
+  tag: latest                          # bot bumps this in values-dev.yaml only
+  pullPolicy: IfNotPresent
+
+service:
+  port: 80
+  targetPort: 8080
+
+containerPort: 8080
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+probes:
+  liveness:
+    path: /healthz
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  readiness:
+    path: /readyz
+    initialDelaySeconds: 3
+    periodSeconds: 5
+
+serviceAccount:
+  create: true
+  name: ""
+
+# Upstream URLs (in-cluster DNS) — override per-env to match release suffix.
+upstreams:
+  productsUrl: http://products:80
+  ordersUrl: http://orders:80
+
+# Internet-facing — Ingress shares ALB `shopxpress-pro-public` with ArgoCD/Grafana.
+ingress:
+  enabled: true
+  groupOrder: 30                       # ArgoCD=10, Grafana=15, gateway=30+
+  certificateArn: arn:aws:acm:ap-southeast-1:527055790396:certificate/ab6091a4-c24c-42bb-b55f-cc2aaa6997b5
+  host: gateway.shopxpress-pro.do2602.click   # placeholder, override per-env
+
+# BFF stateless — no Postgres, no ExternalSecret.
+externalSecret:
+  enabled: false
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 0
+
+terminationGracePeriodSeconds: 30

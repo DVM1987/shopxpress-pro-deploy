@@ -1,0 +1,14 @@
+# Stg override — manual PR promotion from dev.
+
+replicas: 2
+
+externalSecret:
+  awsSecretPath: /shopxpress-pro/stg/products
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

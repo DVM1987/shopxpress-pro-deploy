@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lib.fullname" . }}
+  labels: {{- include "lib.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    type: {{ .Values.strategy.type }}
+    {{- if eq .Values.strategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.strategy.rollingUpdate.maxUnavailable }}
+    {{- end }}
+  selector:
+    matchLabels: {{- include "lib.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "lib.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "lib.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      securityContext: {{- include "lib.podSecurityContext" . | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          {{- if .Values.externalSecret.enabled }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.externalSecret.targetSecretName }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+          securityContext: {{- include "lib.containerSecurityContext" . | nindent 12 }}

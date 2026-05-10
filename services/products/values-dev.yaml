@@ -1,0 +1,14 @@
+# Dev override — bot auto-bumps image.tag after every successful build-push.
+
+replicas: 1
+
+externalSecret:
+  awsSecretPath: /shopxpress-pro/dev/products
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

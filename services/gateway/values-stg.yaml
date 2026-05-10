@@ -1,0 +1,19 @@
+# Stg override — manual PR promotion from dev.
+
+replicas: 2
+
+upstreams:
+  productsUrl: http://products-stg:80
+  ordersUrl: http://orders-stg:80
+
+ingress:
+  groupOrder: 31
+  host: gateway-stg.shopxpress-pro.do2602.click
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
