@@ -1,5 +1,8 @@
 # Dev override — bot auto-bumps image.tag after every successful build-push.
 
+image:
+  tag: sha-666191c
+
 replicas: 2
 
 upstreams:

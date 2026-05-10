@@ -1,8 +1,15 @@
 # Dev override — bot auto-bumps image.tag after every successful build-push.
 
+image:
+  tag: sha-666191c
+
 replicas: 1
 
+# 0.7.5b workaround: data layer chưa làm, AWS Secret /shopxpress-pro/dev/orders
+# chưa tồn tại → ExternalSecret SecretSyncedError. Tạm tắt để App Healthy.
+# Khi 0.7.5b xong, đổi enabled: true.
 externalSecret:
+  enabled: false
   awsSecretPath: /shopxpress-pro/dev/orders
 
 resources:
