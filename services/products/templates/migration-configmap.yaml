@@ -1,0 +1,12 @@
+{{- if .Values.migration.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lib.fullname" . }}-migrations
+  labels: {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    # Wave -2: apply trước Migration Job (-1) và Deployment (0).
+    argocd.argoproj.io/sync-wave: "-2"
+data:
+  {{- ($.Files.Glob "files/migrations/*.sql").AsConfig | nindent 2 }}
+{{- end }}

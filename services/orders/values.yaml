@@ -47,8 +47,17 @@ externalSecret:
     name: aws-secrets-manager
     kind: ClusterSecretStore
   targetSecretName: orders-db-secret
-  awsSecretPath: /shopxpress-pro/dev/orders
+  awsSecretPath: shopxpress-pro/dev/orders-db
   envKey: DATABASE_URL
+
+# Migration Job — golang-migrate CLI, idempotent. ArgoCD sync-wave -1
+# (sau ExternalSecret -2, trước Deployment 0). SQL files load từ
+# files/migrations/*.sql qua ConfigMap.
+migration:
+  enabled: true
+  image:
+    repository: migrate/migrate
+    tag: v4.18.1
 
 strategy:
   type: RollingUpdate

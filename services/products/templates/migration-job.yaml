@@ -1,0 +1,61 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # Job name include image tag suffix → mỗi bump tag = Job mới (idempotent
+  # qua chart upgrade khi image tag thay đổi nhưng migration không thay đổi).
+  name: {{ include "lib.fullname" . }}-migrate-{{ .Values.image.tag | replace "." "-" }}
+  labels: {{- include "lib.labels" . | nindent 4 }}
+  annotations:
+    # ArgoCD sync-wave: chạy SAU ExternalSecret (-2) và TRƯỚC Deployment (0).
+    # Wave -1 đảm bảo K8s Secret đã được ESO sync trước khi Job mount.
+    argocd.argoproj.io/sync-wave: "-1"
+    # Hook Sync: ArgoCD wait Job complete trước khi đánh dấu sync done.
+    # delete-policy: BeforeHookCreation = xoá Job cũ trước khi tạo mới
+    # (cùng tên), HookSucceeded = xoá Job sau khi success (giảm clutter).
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  # ttl: K8s tự delete Job sau N giây kể từ complete (backup cleanup
+  # nếu ArgoCD HookSucceeded miss).
+  ttlSecondsAfterFinished: 300
+  # backoffLimit: pod fail tối đa 3 lần (kubelet wait Secret mount, app
+  # connect retry) trước khi đánh dấu Job failed.
+  backoffLimit: 3
+  template:
+    metadata:
+      labels: {{- include "lib.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          # golang-migrate CLI: idempotent — chỉ apply pending migration.
+          # Lần 2+ run sẽ exit 0 ngay với log "no change".
+          command: ["migrate"]
+          args:
+            - "-path=/migrations"
+            - "-database=$(DATABASE_URL)"
+            - "up"
+          envFrom:
+            # Secret được ESO sync từ AWS Secrets Manager (wave -2).
+            # Kubelet retry mount nếu Secret chưa tồn tại — eventually OK.
+            - secretRef:
+                name: {{ .Values.externalSecret.targetSecretName }}
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+      volumes:
+        - name: migrations
+          configMap:
+            name: {{ include "lib.fullname" . }}-migrations
+{{- end }}

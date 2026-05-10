@@ -5,12 +5,11 @@ image:
 
 replicas: 1
 
-# 0.7.5b workaround: data layer chưa làm, AWS Secret /shopxpress-pro/dev/orders
-# chưa tồn tại → ExternalSecret SecretSyncedError. Tạm tắt để App Healthy.
-# Khi 0.7.5b xong, đổi enabled: true.
+# 0.7.5b DONE 2026-05-10: AWS Secret shopxpress-pro/dev/orders-db LIVE
+# (TF folder terraform/82-data/), chứa key DATABASE_URL precomputed DSN.
+# ESO sync xuống K8s Secret `orders-db-secret`, app pod envFrom pull DSN.
 externalSecret:
-  enabled: false
-  awsSecretPath: /shopxpress-pro/dev/orders
+  enabled: true
 
 resources:
   requests:
