@@ -1,6 +1,6 @@
 # Stg override — manual PR promotion from dev.
 
-replicas: 2
+replicas: 0
 
 upstreams:
   productsUrl: http://products-stg:80

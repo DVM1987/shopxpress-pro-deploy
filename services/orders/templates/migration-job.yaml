@@ -12,9 +12,11 @@ metadata:
     argocd.argoproj.io/sync-wave: "-1"
     # Hook Sync: ArgoCD wait Job complete trước khi đánh dấu sync done.
     # delete-policy: BeforeHookCreation = xoá Job cũ trước khi tạo mới
-    # (cùng tên), HookSucceeded = xoá Job sau khi success (giảm clutter).
+    # (cùng tên). KHÔNG dùng HookSucceeded — Argo sẽ flag App OutOfSync
+    # vì manifest có Job mà cluster không có (Job đã bị xoá sau success).
+    # Job giữ lại + ttlSecondsAfterFinished tự cleanup K8s sau 5 phút.
     argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   # ttl: K8s tự delete Job sau N giây kể từ complete (backup cleanup
   # nếu ArgoCD HookSucceeded miss).

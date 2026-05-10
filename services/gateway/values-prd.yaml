@@ -1,6 +1,6 @@
 # Prd override — manual PR promotion from stg, requires devops review.
 
-replicas: 3
+replicas: 0
 
 upstreams:
   productsUrl: http://products-prd:80

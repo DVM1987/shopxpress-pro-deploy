@@ -1,6 +1,6 @@
 # Stg override — manual PR promotion from dev.
 
-replicas: 2
+replicas: 0
 
 externalSecret:
   awsSecretPath: /shopxpress-pro/stg/orders
@@ -12,3 +12,10 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
+
+# Disable data layer features — AWS Secret shopxpress-pro/stg/orders-db
+# chưa tạo (data layer dev only ở Sub-comp 0.7.5b).
+externalSecret:
+  enabled: false
+migration:
+  enabled: false
